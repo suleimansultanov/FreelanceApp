@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="backgroundGradient">
+            <stop stop-color="#4E7AF2" offset="0%"/>
+            <stop stop-color="#A159CC" offset="100%"/>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="shapeGradient">
+            <stop stop-color="#FFFFFF" offset="0%"/>
+            <stop stop-color="#F0F0F0" offset="100%"/>
+        </linearGradient>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Background with rounded corners -->
+        <path d="M224,0 L800,0 C924.54834,0 1024,99.45166 1024,224 L1024,800 C1024,924.54834 924.54834,1024 800,1024 L224,1024 C99.45166,1024 0,924.54834 0,800 L0,224 C0,99.45166 99.45166,0 224,0 Z" fill="url(#backgroundGradient)"/>
+        
+        <!-- Freelance symbol -->
+        <path d="M512,256 C565.019336,256 608,298.980664 608,352 L608,416 L704,416 C739.346224,416 768,444.653776 768,480 L768,704 C768,739.346224 739.346224,768 704,768 L320,768 C284.653776,768 256,739.346224 256,704 L256,480 C256,444.653776 284.653776,416 320,416 L416,416 L416,352 C416,298.980664 458.980664,256 512,256 Z M512,320 C494.326888,320 480,334.326888 480,352 L480,416 L544,416 L544,352 C544,334.326888 529.673112,320 512,320 Z" fill="url(#shapeGradient)"/>
+    </g>
+</svg> 
