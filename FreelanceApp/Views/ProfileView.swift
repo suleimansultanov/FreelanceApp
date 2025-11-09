@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var user: User = .preview
     @State private var isEditingProfile = false
     @State private var showingImagePicker = false
@@ -117,8 +118,16 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .toolbar {
-                Button("Edit") {
-                    isEditingProfile = true
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Выйти") {
+                        authViewModel.logout()
+                    }
+                    .foregroundColor(Color.theme.error)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Edit") {
+                        isEditingProfile = true
+                    }
                 }
             }
             .sheet(isPresented: $isEditingProfile) {
@@ -275,4 +284,5 @@ struct EditProfileView: View {
 
 #Preview {
     ProfileView()
+        .environmentObject(AuthViewModel())
 }

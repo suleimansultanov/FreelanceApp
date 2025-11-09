@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  FreelanceApp
-//
-//  Created by Suleiman Sultanov on 22/5/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {

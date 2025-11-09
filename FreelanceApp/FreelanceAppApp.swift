@@ -9,14 +9,19 @@ import SwiftUI
 
 @main
 struct FreelanceAppApp: App {
-    @State private var isAuthenticated = false
+    @StateObject private var authViewModel = AuthViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            if isAuthenticated {
-                MainTabView()
-            } else {
-                LoginView(isAuthenticated: $isAuthenticated)
+            Group {
+                if authViewModel.isAuthenticated {
+                    MainTabView()
+                } else {
+                    LoginView()
+                }
             }
+            .environmentObject(authViewModel)
+            .preferredColorScheme(.light)
         }
     }
 }

@@ -1,210 +1,159 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var email = ""
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @State private var username = ""
     @State private var password = ""
-    @State private var isShowingSignUp = false
-    @State private var showingAlert = false
-    @State private var alertMessage = ""
-    @Binding var isAuthenticated: Bool
+    @State private var showPassword = false
+    @State private var showRegistration = false
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 30) {
-                    // Logo and Title
-                    VStack(spacing: 20) {
-                        Image(systemName: "briefcase.circle.fill")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 80, height: 80)
-                            .foregroundColor(Color.theme.primary)
-                        
-                        Text("FreelanceHub")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color.theme.primary)
-                        
-                        Text("Find work or hire talent")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.top, 50)
+            VStack(spacing: 24) {
+                // Login form section
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Вход")
+                        .font(.title2)
+                        .fontWeight(.bold)
                     
-                    // Login Form
-                    VStack(spacing: 20) {
-                        // Email Field
-                        VStack(alignment: .leading) {
-                            Text("Email")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            TextField("Enter your email", text: $email)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
-                        }
+                    // Username field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Имя пользователя")
+                            .foregroundColor(.gray)
                         
-                        // Password Field
-                        VStack(alignment: .leading) {
-                            Text("Password")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            SecureField("Enter your password", text: $password)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
+                        TextField("Введите имя пользователя", text: $username)
+                            .autocapitalization(.none)
+                            .autocorrectionDisabled(true)
+                            .padding()
+                            .background(Color.theme.secondaryBackground)
+                            .cornerRadius(10)
+                    }
+                    
+                    // Password field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Пароль")
+                            .foregroundColor(.gray)
                         
-                        // Forgot Password
-                        Button("Forgot Password?") {
-                            // Handle forgot password
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(Color.theme.primary)
-                        
-                        // Login Button
-                        Button(action: handleLogin) {
-                            Text("Log In")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color.theme.primary)
-                                .cornerRadius(10)
-                        }
-                        
-                        // Divider
                         HStack {
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(.secondary.opacity(0.3))
-                            Text("OR")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(.secondary.opacity(0.3))
+                            if showPassword {
+                                TextField("Введите пароль", text: $password)
+                                    .autocapitalization(.none)
+                                    .autocorrectionDisabled(true)
+                            } else {
+                                SecureField("Введите пароль", text: $password)
+                                    .autocapitalization(.none)
+                                    .autocorrectionDisabled(true)
+                            }
+                            
+                            Button(action: { showPassword.toggle() }) {
+                                Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .padding()
+                        .background(Color.theme.secondaryBackground)
+                        .cornerRadius(10)
+                    }
+                    
+                    if let error = authViewModel.error {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .padding(.top, 4)
+                    }
+                    
+                    // Login button
+                    Button(action: {
+                        authViewModel.loginWithEmailAndPassword(email: username, password: password)
+                    }) {
+                        HStack {
+                            if authViewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .padding(.trailing, 8)
+                            }
+                            Text("Войти")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.theme.primary)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                    .disabled(username.isEmpty || password.isEmpty || authViewModel.isLoading)
+                    
+                    // Registration button
+                    Button(action: { showRegistration = true }) {
+                        Text("Нет аккаунта? Зарегистрироваться")
+                            .foregroundColor(Color.theme.secondary)
+                    }
+                    .padding(.top)
+                }
+                
+                // Social login section
+                VStack(spacing: 16) {
+                    Text("Или войти через")
+                        .font(.headline)
+                    
+                    HStack(spacing: 12) {
+                        // Apple login button
+                        SocialLoginButton(icon: "apple.logo", backgroundColor: .black) {
+                            authViewModel.loginWithApple()
                         }
                         
-                        // Sign Up Button
-                        Button(action: { isShowingSignUp = true }) {
-                            Text("Create an Account")
-                                .font(.headline)
-                                .foregroundColor(Color.theme.primary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color.theme.primary.opacity(0.1))
-                                .cornerRadius(10)
+                        // VK login button
+                        SocialLoginButton(icon: "message.fill", backgroundColor: Color(red: 0.13, green: 0.44, blue: 0.76)) {
+                            authViewModel.loginWithVK()
+                        }
+                        
+                        // Google login button
+                        SocialLoginButton(icon: "g.circle.fill", backgroundColor: Color.blue) {
+                            authViewModel.loginWithGoogle()
+                        }
+                        
+                        // More options button
+                        SocialLoginButton(icon: "ellipsis", backgroundColor: Color(.systemGray4)) {
+                            // Show more options
                         }
                     }
-                    .padding(.horizontal)
                 }
-                .padding()
+                .padding(.top, 40)
+                
+                Spacer()
             }
-            .background(Color.theme.background)
-            .alert("Error", isPresented: $showingAlert) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(alertMessage)
-            }
-            .sheet(isPresented: $isShowingSignUp) {
-                SignUpView(isAuthenticated: $isAuthenticated)
-            }
+            .padding()
+            .navigationBarItems(leading: Button(action: { dismiss() }) {
+                Image(systemName: "xmark")
+                    .foregroundColor(.gray)
+            })
+            .navigationBarTitleDisplayMode(.inline)
         }
-    }
-    
-    private func handleLogin() {
-        // Here you would typically validate the input and make an API call
-        guard !email.isEmpty, !password.isEmpty else {
-            alertMessage = "Please fill in all fields"
-            showingAlert = true
-            return
+        .sheet(isPresented: $showRegistration) {
+            RegistrationView()
         }
-        
-        // For demo purposes, we'll just check for a valid email format
-        guard email.contains("@") else {
-            alertMessage = "Please enter a valid email address"
-            showingAlert = true
-            return
-        }
-        
-        // Simulate successful login
-        isAuthenticated = true
     }
 }
 
-struct SignUpView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var email = ""
-    @State private var password = ""
-    @State private var confirmPassword = ""
-    @State private var name = ""
-    @State private var isFreelancer = false
-    @State private var showingAlert = false
-    @State private var alertMessage = ""
-    @Binding var isAuthenticated: Bool
+struct SocialLoginButton: View {
+    let icon: String
+    let backgroundColor: Color
+    let action: () -> Void
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Personal Information")) {
-                    TextField("Full Name", text: $name)
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                    SecureField("Password", text: $password)
-                    SecureField("Confirm Password", text: $confirmPassword)
-                }
-                
-                Section {
-                    Toggle("I'm a Freelancer", isOn: $isFreelancer)
-                }
-                
-                Section {
-                    Button(action: handleSignUp) {
-                        Text("Create Account")
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(Color.theme.primary)
-                    }
-                }
-            }
-            .navigationTitle("Sign Up")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
-            .alert("Error", isPresented: $showingAlert) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(alertMessage)
-            }
+        Button(action: action) {
+            Image(systemName: icon)
+                .foregroundColor(.white)
+                .font(.system(size: 20))
+                .frame(width: 44, height: 44)
+                .background(backgroundColor)
+                .cornerRadius(8)
         }
-    }
-    
-    private func handleSignUp() {
-        // Validate input
-        guard !name.isEmpty, !email.isEmpty, !password.isEmpty else {
-            alertMessage = "Please fill in all fields"
-            showingAlert = true
-            return
-        }
-        
-        guard password == confirmPassword else {
-            alertMessage = "Passwords do not match"
-            showingAlert = true
-            return
-        }
-        
-        // Simulate successful signup
-        isAuthenticated = true
-        dismiss()
     }
 }
 
 #Preview {
-    LoginView(isAuthenticated: .constant(false))
+    LoginView()
+        .environmentObject(AuthViewModel())
 }
+
